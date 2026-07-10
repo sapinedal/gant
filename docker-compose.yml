@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: trazalo-gantt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-trazalo-gantt}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - trazalo-gantt
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    container_name: trazalo-gantt-backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      APP_NAME: ${APP_NAME:-Trazalo Gantt}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY:?Define APP_KEY (php artisan key:generate --show)}
+      APP_DEBUG: "false"
+      APP_URL: ${APP_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-trazalo-gantt}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      LOG_CHANNEL: stack
+      LOG_LEVEL: warning
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
+      MAIL_EHLO_DOMAIN: ${MAIL_EHLO_DOMAIN:-}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-reply@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Trazalo Gantt}
+    volumes:
+      - backend-storage:/var/www/storage
+    networks:
+      - trazalo-gantt
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: trazalo-gantt-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    networks:
+      - trazalo-gantt
+
+networks:
+  trazalo-gantt:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  backend-storage:
