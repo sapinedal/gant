@@ -4,6 +4,7 @@ services:
     container_name: trazalo-gantt-postgres
     restart: unless-stopped
     environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_DB: ${DB_DATABASE:-trazalo-gantt}
       POSTGRES_USER: ${DB_USERNAME:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD}
