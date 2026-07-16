@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import InvitationPage from './pages/auth/InvitationPage';
+import ProjectJoinPage from './pages/auth/ProjectJoinPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
 import ProfilePage from './pages/profile/ProfilePage';
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/invitations/:token" element={<InvitationPage />} />
+          <Route path="/join/project/:inviteCode" element={<ProjectJoinPage />} />
           <Route
             path="/projects"
             element={

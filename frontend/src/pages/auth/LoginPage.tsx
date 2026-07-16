@@ -31,7 +31,9 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await login(values.email, values.password);
-      navigate('/projects');
+      const redirect = sessionStorage.getItem('redirect_to') || '/projects';
+      sessionStorage.removeItem('redirect_to');
+      navigate(redirect);
     } catch (error) {
       toast.error(extractErrorMessage(error, 'No se pudo iniciar sesión.'));
     } finally {

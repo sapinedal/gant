@@ -70,4 +70,72 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Usuario eliminado.']);
     }
+
+    public function projects(User $user)
+    {
+        $projects = $user->projects()->withPivot('role')->orderBy('name')->get();
+        return response()->json($projects);
+    }
+
+    public function attachProject(Request $request, User $user)
+    {
+        $request->validate([
+            'project_id' => ['required', 'exists:projects,id'],
+            'role' => ['required', 'in:owner,editor,viewer'],
+        ]);
+
+        $projectId = $request->project_id;
+        $role = $request->role;
+
+        $project = \App\Models\Project::findOrFail($projectId);
+        if ($role === 'owner') {
+            $project->update(['owner_id' => $user->id]);
+        }
+
+        $user->projects()->syncWithoutDetaching([
+            $projectId => ['role' => $role]
+        ]);
+
+        if ($role === 'owner') {
+            $user->projects()->updateExistingPivot($projectId, ['role' => 'owner']);
+        }
+
+        return response()->json([
+            'message' => 'Usuario asociado al proyecto correctamente.',
+            'project' => $user->projects()->where('project_id', $projectId)->withPivot('role')->first()
+        ], 201);
+    }
+
+    public function updateProjectRole(Request $request, User $user, \App\Models\Project $project)
+    {
+        $request->validate([
+            'role' => ['required', 'in:owner,editor,viewer'],
+        ]);
+
+        $role = $request->role;
+
+        if ($role === 'owner') {
+            $project->update(['owner_id' => $user->id]);
+        } elseif ($project->owner_id === $user->id && $role !== 'owner') {
+            return response()->json(['message' => 'No puedes cambiar el rol del propietario principal del proyecto sin asignar a otro primero.'], 422);
+        }
+
+        $user->projects()->updateExistingPivot($project->id, ['role' => $role]);
+
+        return response()->json([
+            'message' => 'Rol del usuario en el proyecto actualizado correctamente.',
+            'project' => $user->projects()->where('project_id', $project->id)->withPivot('role')->first()
+        ]);
+    }
+
+    public function detachProject(User $user, \App\Models\Project $project)
+    {
+        if ($project->owner_id === $user->id) {
+            return response()->json(['message' => 'No puedes desvincular al propietario principal de un proyecto.'], 422);
+        }
+
+        $user->projects()->detach($project->id);
+
+        return response()->json(['message' => 'Usuario desvinculado del proyecto correctamente.']);
+    }
 }

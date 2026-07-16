@@ -21,6 +21,8 @@ export interface Project {
   owner?: User;
   members?: (User & { pivot?: { role: Role } })[];
   tasks_count?: number;
+  invite_code?: string | null;
+  invite_enabled?: boolean;
   created_at: string;
   updated_at: string;
 }

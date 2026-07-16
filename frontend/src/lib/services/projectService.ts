@@ -29,4 +29,19 @@ export const projectService = {
   updateMemberRole(id: number, userId: number, role: Role) {
     return api.patch(`/projects/${id}/members/${userId}`, { role });
   },
+  enableInviteLink(id: number) {
+    return api.post<{ invite_code: string; invite_enabled: boolean }>(`/projects/${id}/invite-link/enable`).then((r) => r.data);
+  },
+  disableInviteLink(id: number) {
+    return api.post<{ invite_enabled: boolean }>(`/projects/${id}/invite-link/disable`).then((r) => r.data);
+  },
+  resetInviteLink(id: number) {
+    return api.post<{ invite_code: string; invite_enabled: boolean }>(`/projects/${id}/invite-link/reset`).then((r) => r.data);
+  },
+  previewInvite(inviteCode: string) {
+    return api.get<{ id: number; name: string; description: string | null; owner_name: string; status: string; is_member: boolean }>(`/invitations/project/${inviteCode}`).then((r) => r.data);
+  },
+  joinProject(inviteCode: string) {
+    return api.post<{ message: string; project_id: number }>(`/invitations/project/${inviteCode}/accept`).then((r) => r.data);
+  },
 };

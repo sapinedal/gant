@@ -38,7 +38,9 @@ export default function RegisterPage() {
     setIsSubmitting(true);
     try {
       await registerUser(values.name, values.email, values.password, values.password_confirmation);
-      navigate('/projects');
+      const redirect = sessionStorage.getItem('redirect_to') || '/projects';
+      sessionStorage.removeItem('redirect_to');
+      navigate(redirect);
     } catch (error) {
       toast.error(extractErrorMessage(error, 'No se pudo crear la cuenta.'));
     } finally {

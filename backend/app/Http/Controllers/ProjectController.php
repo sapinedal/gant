@@ -116,4 +116,54 @@ class ProjectController extends Controller
 
         return response()->json(['message' => 'Rol actualizado.']);
     }
+
+    public function enableInviteLink(Request $request, Project $project)
+    {
+        $this->authorize('manageMembers', $project);
+
+        $project->update([
+            'invite_enabled' => true,
+            'invite_code' => $project->invite_code ?: Str::random(16),
+        ]);
+
+        return response()->json([
+            'message' => 'Enlace de invitación activado.',
+            'invite_code' => $project->invite_code,
+            'invite_enabled' => true,
+        ]);
+    }
+
+    public function disableInviteLink(Request $request, Project $project)
+    {
+        $this->authorize('manageMembers', $project);
+
+        $project->update(['invite_enabled' => false]);
+
+        return response()->json([
+            'message' => 'Enlace de invitación desactivado.',
+            'invite_enabled' => false,
+        ]);
+    }
+
+    public function resetInviteLink(Request $request, Project $project)
+    {
+        $this->authorize('manageMembers', $project);
+
+        $project->update([
+            'invite_code' => Str::random(16),
+            'invite_enabled' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Enlace de invitación regenerado.',
+            'invite_code' => $project->invite_code,
+            'invite_enabled' => true,
+        ]);
+    }
+
+    public function allProjectsForAdmin(Request $request)
+    {
+        $projects = Project::orderBy('name')->get(['id', 'name']);
+        return response()->json($projects);
+    }
 }

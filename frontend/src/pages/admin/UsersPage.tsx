@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Pencil, Plus, ShieldCheck, Trash2, Users as UsersIcon } from 'lucide-react';
+import { Pencil, Plus, ShieldCheck, Trash2, Users as UsersIcon, FolderKanban } from 'lucide-react';
 import PageHeader from '../../components/ui/PageHeader';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import UserFormModal from '../../components/admin/UserFormModal';
+import UserProjectsModal from '../../components/admin/UserProjectsModal';
 import { userAdminService } from '../../lib/services/userAdminService';
 import { extractErrorMessage } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
@@ -17,6 +18,9 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  
+  const [isProjectsModalOpen, setIsProjectsModalOpen] = useState(false);
+  const [projectsUser, setProjectsUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -39,6 +43,11 @@ export default function UsersPage() {
   function openEdit(user: User) {
     setSelectedUser(user);
     setIsModalOpen(true);
+  }
+
+  function openProjects(user: User) {
+    setProjectsUser(user);
+    setIsProjectsModalOpen(true);
   }
 
   function handleSaved(user: User) {
@@ -111,6 +120,14 @@ export default function UsersPage() {
                     <td className="px-4 py-3 text-neutral-500">{user.owned_projects_count ?? 0}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={FolderKanban}
+                          iconOnly
+                          title="Gestionar proyectos del usuario"
+                          onClick={() => openProjects(user)}
+                        />
                         <Button variant="ghost" size="sm" icon={Pencil} iconOnly onClick={() => openEdit(user)} />
                         {user.id !== currentUser?.id && (
                           <Button variant="ghost" size="sm" icon={Trash2} iconOnly className="text-error-500" onClick={() => handleDelete(user)} />
@@ -133,6 +150,7 @@ export default function UsersPage() {
       )}
 
       <UserFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} onSaved={handleSaved} />
+      <UserProjectsModal isOpen={isProjectsModalOpen} onClose={() => setIsProjectsModalOpen(false)} user={projectsUser} />
     </div>
   );
 }

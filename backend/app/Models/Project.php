@@ -18,7 +18,25 @@ class Project extends Model
         'color',
         'status',
         'owner_id',
+        'invite_code',
+        'invite_enabled',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'invite_enabled' => 'boolean',
+        ];
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($project) {
+            if (!$project->invite_code) {
+                $project->invite_code = \Illuminate\Support\Str::random(16);
+            }
+        });
+    }
 
     public function owner(): BelongsTo
     {
