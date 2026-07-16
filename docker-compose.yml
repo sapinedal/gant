@@ -56,7 +56,7 @@ services:
     networks:
       - trazalo-gantt
 
-  nginx:
+  frontend:
     build:
       context: ./frontend
     container_name: trazalo-gantt-frontend
